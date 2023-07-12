@@ -30,5 +30,5 @@ int main() {
         scanf("%d", nums+i);
     findStats(nums, &avg, &maxi, &mini, n);
     printf("%.2f %d %d", avg, maxi, mini);
-return 0;
+    return 0;
 }

@@ -19,7 +19,7 @@ int main() {
         if (numbers[temp] > max) max = numbers[temp];
     }
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < SIZE; i++) {
         if (numbers[i] == max) printf("%d ", i);
     }
     
