@@ -34,7 +34,7 @@ void getInput(char **ptr, int size) {
     }
 }
 
-void *findStartPostion(char **map, int size) {
+int *findStartPostion(char **map, int size) {
     
     int *startPositionPtr = (int *) malloc(sizeof (int) * 2);
 
