@@ -15,7 +15,7 @@ playerDetail_t *createNode(int order, int limit) {
     newNode->accumulation = 0;
     newNode->limit = limit;
     newNode->next = NULL;
-    newNode->next = NULL;
+    newNode->prev = NULL;
     return newNode;
 }
 
