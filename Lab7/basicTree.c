@@ -7,14 +7,16 @@
 // For example:
 typedef struct node {
     int value;
+    int level;
     struct node *sibling;
     struct node *child;
 } node_t;
 typedef node_t tree_t;
 
-node_t *createNode(int value) {
+node_t *createNode(int value, int level) {
     node_t *newNode = (node_t *) malloc(sizeof(node_t));
     newNode->value = value;
+    newNode->level = level;
     newNode->child = NULL;
     newNode->sibling = NULL;
     return newNode;
@@ -23,7 +25,7 @@ node_t *createNode(int value) {
 node_t *findNode(tree_t *t, int value) {
     node_t *currNode = t;
     node_t *tmpNode = NULL;
-    
+
     if (currNode == NULL)
         return NULL;
 
@@ -66,22 +68,20 @@ void destroy(tree_t *t) {
 }
 
 tree_t *attach(tree_t *t, int parentValue, int childValue) {
-    node_t *newNode = createNode(childValue);
     node_t *parentNode = NULL;
 
     if (t == NULL)
-        t = newNode;
-    
+        t = createNode(childValue, 0);
+
     else {
         parentNode = findNode(t, parentValue);
-        // printf("get value = %d\n", parentNode->value);
         if (parentNode->child == NULL)
-            parentNode->child = newNode;
+            parentNode->child = createNode(childValue, parentNode->level + 1);
         else {
             parentNode = parentNode->child;
             while (parentNode->sibling != NULL)
                 parentNode = parentNode->sibling;
-            parentNode->sibling = newNode;
+            parentNode->sibling = createNode(childValue, parentNode->level);
         }
     }
      
@@ -111,13 +111,19 @@ tree_t *detach(tree_t *t, int value) {
     return t;
 }
 
+int search(tree_t *t, int value) {
+    node_t *targetNode = findNode(t, value);
+    if (targetNode != NULL)
+        return 1;
+    return 0;
+}
 
 void print_tree(tree_t *t) {
     // node_t *currNode = t;
     if (t != NULL) {
-        printf("-> Node: %d go child\n", t->value);
+        printf("-> Node: %d level %d go child\n", t->value, t->level);
         print_tree(t->child);
-        printf("-> Node %d go sibling\n", t->value);
+        printf("-> Node %d level %d go sibling\n", t->value, t->level);
         print_tree(t->sibling);
     }
     else
@@ -140,10 +146,10 @@ int main(void) {
                 scanf("%d", &node);
                 t = detach(t, node);
                 break;
-            // case 3:
-            //     scanf("%d", &node);
-            //     printf("%d\n", search(t, node));
-            //     break;
+            case 3:
+                scanf("%d", &node);
+                printf("%d\n", search(t, node));
+                break;
             // case 4:
             //     scanf("%d", &node);
             //     printf("%d\n", degree(t, node));
