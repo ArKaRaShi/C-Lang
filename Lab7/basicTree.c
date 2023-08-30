@@ -20,39 +20,43 @@ node_t *createNode(int value) {
     return newNode;
 }
 
-
-// option = 1 for node, 2 for parent
-node_t *getNode(tree_t *t, int value, int option) {
+node_t *findNode(tree_t *t, int value) {
     node_t *currNode = t;
-    if (option == 1) {
-        if (currNode == NULL)
-            return NULL;
-
-        printf("search value %d", currNode->value);
-        if (currNode->value == value)
-            return currNode;
-    }
-    if (option == 2) {
-        // if (currNode->child == NULL && currNode->sibling == NULL)
-        //     return NULL
-
-        if (currNode->child != NULL) {
-            if (currNode->child->value == value)
-                return currNode;
-        } else if (currNode->sibling != NULL) {
-            if (currNode->sibling->value == value)
-                return currNode;
-        } else
-            return NULL;
-    }
+    node_t *tmpNode = NULL;
     
-    currNode = getNode(currNode->child, value, option);
     if (currNode == NULL)
-        currNode = getNode(currNode->sibling, value, option);
+        return NULL;
 
-    return currNode;
+    if (currNode->value == value)
+        return currNode;
+    
+    tmpNode = findNode(currNode->child, value);
+    if (tmpNode == NULL)
+        tmpNode = findNode(currNode->sibling, value);
+
+    return tmpNode;
 }
 
+node_t *findParentNode(tree_t *t, int value) {
+    node_t *currNode = t;
+    node_t *tmpNode = NULL;
+
+    if (currNode->child != NULL) {
+        if (currNode->child->value == value)
+            return currNode;
+    } else if (currNode->sibling != NULL) {
+        if (currNode->sibling->value == value)
+            return currNode;
+    } else
+        return NULL;
+
+    tmpNode = findParentNode(currNode->child, value);
+    if (tmpNode == NULL)
+        tmpNode = findParentNode(currNode->sibling, value);
+
+    return tmpNode;
+}
+// option = 1 for node, 2 for parent
 void destroy(tree_t *t) {
     if (t != NULL) {
         destroy(t->child);
@@ -69,8 +73,8 @@ tree_t *attach(tree_t *t, int parentValue, int childValue) {
         t = newNode;
     
     else {
-        parentNode = getNode(t, parentValue, 1);
-        printf("get value = %d\n", parentNode->value);
+        parentNode = findNode(t, parentValue);
+        // printf("get value = %d\n", parentNode->value);
         if (parentNode->child == NULL)
             parentNode->child = newNode;
         else {
@@ -85,17 +89,24 @@ tree_t *attach(tree_t *t, int parentValue, int childValue) {
 }
 
 tree_t *detach(tree_t *t, int value) {
-    node_t *parentNode = getNode(t, value, 2);
+    node_t *parentNode = findParentNode(t, value);
     tree_t *subTree = NULL;
 
-    if (parentNode->child->value == value)
-        subTree = parentNode->child;
-
-    if (parentNode->sibling->value == value) {
-        subTree = parentNode->sibling;
-        parentNode->sibling = parentNode->sibling->sibling;
+    if (parentNode->child != NULL) {
+        if (parentNode->child->value == value) {
+            subTree = parentNode->child;
+            parentNode->child = parentNode->child->sibling;
+        }
     }
 
+    if (parentNode->sibling != NULL) {
+        if (parentNode->sibling->value == value) {
+            subTree = parentNode->sibling;
+            parentNode->sibling = parentNode->sibling->sibling;
+        }
+    }
+
+    subTree->sibling = NULL;
     destroy(subTree);
     return t;
 }
