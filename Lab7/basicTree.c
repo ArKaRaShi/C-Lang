@@ -118,6 +118,35 @@ int search(tree_t *t, int value) {
     return 0;
 }
 
+int degree(tree_t *t, int value) {
+    node_t *targetNode = findNode(t, value);
+    node_t *children = targetNode->child;
+    
+    int countNode = 0;
+    if (children != NULL) {
+        countNode++;
+        while (children->sibling != NULL) {
+            countNode++;
+            children = children->sibling;
+        }
+    }
+    return countNode;
+}
+
+int is_root(tree_t *t, int value) {
+    node_t *targetNode = findNode(t, value);
+    if (targetNode->level == 0)
+        return 1;
+    return 0;
+}
+
+int is_leaf(tree_t *t, int value) {
+    node_t *targetNode = findNode(t, value);
+    if (targetNode->child == NULL)
+        return 1;
+    return 0;
+}
+
 void print_tree(tree_t *t) {
     // node_t *currNode = t;
     if (t != NULL) {
@@ -150,18 +179,18 @@ int main(void) {
                 scanf("%d", &node);
                 printf("%d\n", search(t, node));
                 break;
-            // case 4:
-            //     scanf("%d", &node);
-            //     printf("%d\n", degree(t, node));
-            //     break;
-            // case 5:
-            //     scanf("%d", &node);
-            //     printf("%d\n", is_root(t, node));
-            //     break;
-            // case 6:
-            //     scanf("%d", &node);
-            //     printf("%d\n", is_leaf(t, node));
-            //     break;
+            case 4:
+                scanf("%d", &node);
+                printf("%d\n", degree(t, node));
+                break;
+            case 5:
+                scanf("%d", &node);
+                printf("%d\n", is_root(t, node));
+                break;
+            case 6:
+                scanf("%d", &node);
+                printf("%d\n", is_leaf(t, node));
+                break;
             // case 7:
             //     scanf("%d", &node);
             //     siblings(t, node);
