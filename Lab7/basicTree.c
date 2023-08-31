@@ -11,7 +11,10 @@ typedef struct node {
     struct node *sibling;
     struct node *child;
 } node_t;
+
 typedef node_t tree_t;
+typedef node_t stack_t;
+typedef node_t queue_t;
 
 node_t *createNode(int value, int level) {
     node_t *newNode = (node_t *) malloc(sizeof(node_t));
@@ -43,13 +46,16 @@ node_t *findConnectNode(tree_t *t, int value) {
     node_t *currNode = t;
     node_t *tmpNode = NULL;
 
-    if (currNode->child != NULL) {
-        if (currNode->child->value == value)
-            return currNode;
-    } else if (currNode->sibling != NULL) {
-        if (currNode->sibling->value == value)
-            return currNode;
-    } else
+    if (currNode->child != NULL || currNode->sibling != NULL) {
+        if (currNode->child != NULL) {
+            if (currNode->child->value == value) 
+                return currNode;
+        } 
+        if (currNode->sibling != NULL) {
+            if (currNode->sibling->value == value)
+                return currNode;
+        } 
+    } else 
         return NULL;
 
     tmpNode = findConnectNode(currNode->child, value);
@@ -73,11 +79,25 @@ node_t *findParrentNode(tree_t *t, int value) {
         tmpNode = tmpNode->sibling;
     }
 
-    tmpNode = findParrent(currNode->child, value);
+    tmpNode = findParrentNode(currNode->child, value);
     if (tmpNode == NULL) 
-        tmpNode = findParrent(currNode->sibling, value);
+        tmpNode = findParrentNode(currNode->sibling, value);
     
     return tmpNode;
+}
+
+int is_root(tree_t *t, int value) {
+    node_t *targetNode = findNode(t, value);
+    if (targetNode->level == 0)
+        return 1;
+    return 0;
+}
+
+int is_leaf(tree_t *t, int value) {
+    node_t *targetNode = findNode(t, value);
+    if (targetNode->child == NULL)
+        return 1;
+    return 0;
 }
 
 void destroy(tree_t *t) {
@@ -110,9 +130,18 @@ tree_t *attach(tree_t *t, int parentValue, int childValue) {
 }
 
 tree_t *detach(tree_t *t, int value) {
+
+    if (is_root(t, value)) {
+        destroy(t);
+        t = NULL;
+        return t;
+    }
+
+
     node_t *connectNode = findConnectNode(t, value);
     tree_t *subTree = NULL;
 
+    printf("process\n");
     if (connectNode->child != NULL) {
         if (connectNode->child->value == value) {
             subTree = connectNode->child;
@@ -127,6 +156,7 @@ tree_t *detach(tree_t *t, int value) {
         }
     }
 
+    printf("Complete\n");
     subTree->sibling = NULL;
     destroy(subTree);
     return t;
@@ -154,19 +184,6 @@ int degree(tree_t *t, int value) {
     return countNode;
 }
 
-int is_root(tree_t *t, int value) {
-    node_t *targetNode = findNode(t, value);
-    if (targetNode->level == 0)
-        return 1;
-    return 0;
-}
-
-int is_leaf(tree_t *t, int value) {
-    node_t *targetNode = findNode(t, value);
-    if (targetNode->child == NULL)
-        return 1;
-    return 0;
-}
 
 void siblings(tree_t *t, int value) {
     node_t *parrentNode = findParrentNode(t, value);
