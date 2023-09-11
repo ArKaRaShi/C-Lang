@@ -13,9 +13,72 @@ typedef struct stackNode {
     struct stackNode *next;
 } stackNode_t;
 
+typedef struct queueNode {
+    struct treeNode *dataNode;
+    struct queueNode *next;
+} queueNode_t;
+
+typedef struct queue {
+    int size;
+    struct queueNode *front;
+    struct queueNode *rear;
+} queue_t;
+
 typedef treeNode_t tree_t;
 typedef stackNode_t stack_t;
-// typedef node_t queue_t;
+
+queueNode_t *createQueueNode(treeNode_t *dataNode) {
+    queueNode_t *newNode = (queueNode_t *) malloc(sizeof(queueNode_t));
+    newNode->dataNode = dataNode;
+    newNode->next = NULL;
+    return newNode;
+}
+
+queue_t *createQueue() {
+    queue_t *newQueue = (queue_t *) malloc(sizeof(queue_t));
+    newQueue->size = 0;
+    newQueue->front = NULL;
+    newQueue->rear = NULL;
+    return newQueue;
+}
+
+void enqueue(queue_t **q, treeNode_t *dataNode) {
+    queueNode_t *newNode = createQueueNode(dataNode);
+    if ((*q)->front == NULL && (*q)->rear == NULL) {
+        (*q)->front = newNode;
+        (*q)->rear = newNode;
+    } else {
+        (*q)->rear->next = newNode;
+        (*q)->rear = newNode;
+    }
+    (*q)->size++;
+}
+
+void dequeue(queue_t **q) {
+    queueNode_t *tmpNode = NULL;
+    if ((*q)->front != NULL && (*q)->rear != NULL) {
+        if ((*q)->front == (*q)->rear) {
+            free((*q)->front);
+            (*q)->front = NULL;
+            (*q)->rear = NULL;
+        } else {
+            tmpNode = (*q)->front;
+            (*q)->front = (*q)->front->next;
+            free(tmpNode);
+        }
+        (*q)->size--;
+    }
+}
+
+queueNode_t *front(queue_t *q) {
+    return q->front;
+}
+
+int queueEmpty(queue_t *q) {
+    if (q->front == NULL)
+        return 1;
+    return 0;
+}
 
 stackNode_t *createStackNode(treeNode_t *dataNode) {
     stackNode_t *newNode = (stackNode_t *) malloc(sizeof(stackNode_t));
@@ -24,8 +87,8 @@ stackNode_t *createStackNode(treeNode_t *dataNode) {
     return newNode;
 }
 
-void push(stack_t **s, treeNode_t *tmpNode) {
-    stackNode_t *newNode = createStackNode(tmpNode);
+void push(stack_t **s, treeNode_t *dataNode) {
+    stackNode_t *newNode = createStackNode(dataNode);
     newNode->next = *s;
     *s = newNode;
 }
@@ -84,6 +147,9 @@ treeNode_t *findNode(tree_t *t, int value) {
 treeNode_t *findConnectNode(tree_t *t, int value) {
     treeNode_t *currNode = t;
     treeNode_t *tmpNode = NULL;
+
+    if (currNode == NULL)
+        return NULL;
 
     if (currNode->child != NULL || currNode->sibling != NULL) {
         if (currNode->child != NULL) {
@@ -180,13 +246,11 @@ tree_t *attach(tree_t *t, int parentValue, int childValue) {
 }
 
 tree_t *detach(tree_t *t, int value) {
-
     if (is_root(t, value)) {
         destroy(t);
         t = NULL;
         return t;
     }
-
 
     treeNode_t *connectNode = findConnectNode(t, value);
     tree_t *subTree = NULL;
@@ -290,20 +354,75 @@ int path_length(tree_t *t, int startValue, int endValue) {
     return length;
 }
 
+void bfs(tree_t *t) {
+    queue_t *q = createQueue();
+    treeNode_t *tmpTreeNode = NULL;
+    treeNode_t *tmpChildNode = NULL;
+    enqueue(&q, t);
+
+    int tmpSize;
+    while (!queueEmpty(q)) {
+        tmpSize = q->size;
+        for (int i = 0; i < tmpSize; i++) {
+            tmpTreeNode = front(q)->dataNode;
+            dequeue(&q);
+
+            tmpChildNode = tmpTreeNode->child;
+            while (tmpChildNode != NULL) {
+                enqueue(&q, tmpChildNode);
+                tmpChildNode = tmpChildNode->sibling;
+            }
+            printf("%d ", tmpTreeNode->value);
+        }
+    }
+    free(q);
+    printf("\n");
+}
+
+void dfs(tree_t *t) {
+    stack_t *mainStack = NULL;
+    stack_t *subStack = NULL;
+    treeNode_t *tmpTreeNode = NULL;
+    treeNode_t *tmpChildNode = NULL;
+    push(&mainStack, t);
+    
+    while (!stackEmpty(mainStack)) {
+        tmpTreeNode = top(mainStack);
+        pop(&mainStack);
+        
+        tmpChildNode = tmpTreeNode->child;
+        while (tmpChildNode != NULL) {
+            push(&subStack, tmpChildNode);
+            tmpChildNode = tmpChildNode->sibling;
+        }
+        while (!stackEmpty(subStack)) {
+            push(&mainStack, top(subStack));
+            pop(&subStack);
+        }
+
+        printf("%d ", tmpTreeNode->value);
+    }
+    printf("\n");
+}
+
 void ancestor(tree_t *t, int value) {
     print_path(t, t->value, value);
 }
 
+void descendant(tree_t *t, int value) {
+    treeNode_t *targetNode = findNode(t, value);
+    bfs(targetNode);
+}
+
 void print_tree(tree_t *t) {
-    // treeNode_t *currNode = t;
     if (t != NULL) {
-        printf("-> Node: %d level %d go child\n", t->value, t->level);
+        int blank = t->level * 4;
+        for (int i = 0; i < blank; i++) 
+            printf(" ");
+        printf("%d\n", t->value);
         print_tree(t->child);
-        printf("-> Node %d level %d go sibling\n", t->value, t->level);
         print_tree(t->sibling);
     }
-    else
-        printf(" Nothing\n");
 }
 
 int main(void) {
@@ -359,16 +478,16 @@ int main(void) {
                 scanf("%d", &node);
                 ancestor(t, node);
                 break;
-            // case 12:
-            //     scanf("%d", &node);
-            //     descendant(t, node);
-            //     break;
-            // case 13:
-            //     bfs(t);
-            //     break;
-            // case 14:
-            //     dfs(t);
-            //     break;
+            case 12:
+                scanf("%d", &node);
+                descendant(t, node);
+                break;
+            case 13:
+                bfs(t);
+                break;
+            case 14:
+                dfs(t);
+                break;
             case 15:
                 print_tree(t);
                 break;
@@ -376,51 +495,3 @@ int main(void) {
     }
     return 0;
 } 
-
-/*
-11
-1 -1 1
-1 1 2
-1 1 3
-1 2 4
-1 2 5
-1 5 6
-1 6 7
-2 7
-15 
-2 2
-15
-
-23
-1 -1 1
-1 1 2
-1 1 3
-1 2 4
-1 2 5
-1 3 6
-1 3 7
-1 4 8
-1 5 9
-1 5 10
-1 6 11
-1 6 12
-1 6 13
-1 13 14
-
-23
-1 -1 1
-1 1 2
-1 1 3
-1 2 4
-1 2 5
-1 3 6
-1 3 7
-1 4 8
-1 5 9
-1 5 10
-1 6 11
-1 6 12
-1 6 13
-1 13 14
-9 1 2
-*/
