@@ -97,32 +97,35 @@ int is_perfect(tree_t *t) {
     if (t == NULL)
         return 0;
 
-    int tmp_left = 0, tmp_right = 0;
+    queue_t *q = create_queue();
+    tree_t *temp_t_node = NULL;
 
-    if (t->left == NULL && t->right == NULL) 
-        return 1;
-    else if (t->left == NULL || t->right == NULL) 
-        return 0;
-    
-    tmp_left = is_perfect(t->left);
-    tmp_right = is_perfect(t->right);
-    if (tmp_left == tmp_right) {
-        if (is_root(t) && (tmp_left != 0 && tmp_right != 0))
-            return 1;
-        else
-            return tmp_left + 1;
+    int result = 1;
+    int total_level_node = 1, count_node, temp_size;
+    enqueue(&q, t);
+    while (!queue_empty(q)) {
+        count_node = 0;
+        temp_size = q->size;
+        for (int i = 0; i < temp_size; i++) {
+            temp_t_node = q->front->data;
+            dequeue(&q);
+
+            if (temp_t_node->left != NULL)
+                enqueue(&q, temp_t_node->left);
+            if (temp_t_node->right != NULL)
+                enqueue(&q, temp_t_node->right);
+            count_node++;
+        }
+        if (count_node != total_level_node) {
+            result = 0;
+            break;
+        }
+        total_level_node = total_level_node * 2;
     }
-    return 0;
+    while (!queue_empty(q))
+        dequeue(&q);
+    return result;
 }
-
-/*
-5
--1 1 0
-1 2 1
-1 3 2
-2 4 1
-3 5 2
-*/
 
 int is_complete(tree_t *t) {
     if (t == NULL)
