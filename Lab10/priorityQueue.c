@@ -8,7 +8,7 @@ typedef struct heap {
 heap_t *init_heap(int size) {
     heap_t *new_heap = (heap_t *) malloc(sizeof(heap_t));
     new_heap->data = (int *) malloc(sizeof(int) * size);
-    new_heap->last_index = size - 1;
+    new_heap->last_index = -1;
     return new_heap;
 }
 
@@ -39,20 +39,37 @@ void swap_data(heap_t *max_heap, int index1, int index2) {
 
 void insert(heap_t *max_heap, int data) {
     int new_last_index = max_heap->last_index + 1;
+
     *(max_heap->data + new_last_index) = data;
+    max_heap->last_index = new_last_index;
 
     int parent_index = find_parent_index(new_last_index);
-    int parent_data = *(max_heap->data + parent_index);
     int curr_index = new_last_index;
-    int new_data = data;
+    int curr_data, parent_data;
     while (!out_of_range(parent_index, 0, new_last_index)) {
-        if (compare_max(parent_data, new_data))
-            swap_data(max_heap, parent_data, new_data);
-        else
+        if (parent_index == curr_index)
             break;
+        
+        parent_data = *(max_heap->data + parent_index);
+        curr_data = *(max_heap->data + curr_index);
+        if (compare_max(parent_data, curr_data))
+            swap_data(max_heap, parent_index, curr_index);
+        else break;
         curr_index = parent_index;
         parent_index = find_parent_index(curr_index);
     }
+}
+
+void delete_max(heap_t *max_heap) {
+
+
+
+}
+
+void bfs(heap_t *max_heap) {
+    for (int i = 0; i <= max_heap->last_index; i++) 
+        printf("%d ", *(max_heap->data + i));
+    printf("\n");
 }
 
 int main(void) {
@@ -69,17 +86,17 @@ int main(void) {
                 scanf("%d", &data);
                 insert(max_heap, data);
                 break;
-            case 2:
-                delete_max(max_heap);
-                break;
-            case 3:
-                printf("%d\n", find_max(max_heap));
-                break;
-            case 4:
-                scanf("%d %d", &old_key, &new_key);
-                update_key(max_heap, old_key,
-                new_key);
-                break;
+            // case 2:
+            //     delete_max(max_heap);
+            //     break;
+            // case 3:
+            //     printf("%d\n", find_max(max_heap));
+            //     break;
+            // case 4:
+            //     scanf("%d %d", &old_key, &new_key);
+            //     update_key(max_heap, old_key,
+            //     new_key);
+            //     break;
             case 5:
                 bfs(max_heap);
                 break;
