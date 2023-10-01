@@ -220,3 +220,8 @@ int main(void) {
     is_degenerate(t), is_skewed(t));
     return 0;
 }
+
+
+x=15 a=n b=m , m != na
+
+  
